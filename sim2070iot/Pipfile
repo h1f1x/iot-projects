@@ -9,6 +9,7 @@ black = "*"
 isort = "*"
 "rpi.gpio" = "*"
 pyserial = "*"
+click = "*"
 
 [dev-packages]
 
