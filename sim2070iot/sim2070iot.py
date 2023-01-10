@@ -45,7 +45,8 @@ class SIM2070:
         ser.dsrdtr = dsrdtr
         debug_print("SIM2070 Class initialized!")
 
-        # Function for getting modem response
+    def clear_compose(self):
+        self.compose = ""
 
     def getResponse(self, desired_response):
         if ser.isOpen() == False:
