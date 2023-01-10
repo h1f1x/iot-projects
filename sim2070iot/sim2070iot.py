@@ -29,6 +29,9 @@ class SIM2070:
     response = ""  # modem responses
     compose = ""  # modem command
 
+    # Special Characters
+    CTRL_Z = "\x1A"
+
     def __init__(
         self,
         serial_port="/dev/ttyAMA0",
