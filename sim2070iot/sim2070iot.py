@@ -2,7 +2,6 @@ import time
 
 import RPi.GPIO as GPIO
 import serial
-from Adafruit_ADS1x15 import ADS1015
 
 # global variables
 TIMEOUT = 3  # seconds
@@ -104,6 +103,6 @@ class SIM2070:
         return self.sendATComm("AT+CGSN", "OK\r\n")  # Identical command: AT+GSN
 
 
-if __name__ == "main":
+if __name__ == "__main__":
     sim = SIM2070()
     sim.getIMEI()
