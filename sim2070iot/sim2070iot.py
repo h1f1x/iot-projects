@@ -9,7 +9,7 @@ ser = serial.Serial()
 
 
 def debug_print(message):
-    print(message)
+    print("[DEBUG]" + message)
 
 
 # Function for getting time as miliseconds
@@ -30,7 +30,7 @@ class SIM2070:
     compose = ""  # modem command
 
     # Special Characters
-    CTRL_Z = "\x1A"
+    CTRL_Z = "\032"
 
     def __init__(
         self,
