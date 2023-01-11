@@ -131,6 +131,123 @@ class SIM2070:
         self.sendATCommOnce(text)
         self.sendATComm(self.CTRL_Z, "OK", 8)  # with 8 seconds timeout
 
+    # Function for configurating and activating TCP context
+    def activateContext(self):
+        self.sendATComm("AT+QICSGP=1", "OK\r\n")
+        delay(1000)
+        self.sendATComm("AT+QIACT=1", "\r\n")
+
+    # Function for deactivating TCP context
+    def deactivateContext(self):
+        self.sendATComm("AT+QIDEACT=1", "\r\n")
+
+    # Function for connecting to server via TCP
+    # just buffer access mode is supported for now.
+    def connectToServerTCP(self):
+        self.compose = "AT+QIOPEN=1,1"
+        self.compose += ',"TCP","'
+        self.compose += str(self.ip_address)
+        self.compose += '",'
+        self.compose += str(self.port_number)
+        self.compose += ",0,0"
+        self.sendATComm(self.compose, "OK\r\n")
+        self.clear_compose()
+        self.sendATComm("AT+QISTATE=0,1", "OK\r\n")
+
+    # Fuction for sending data via tcp.
+    # just buffer access mode is supported for now.
+    def sendDataTCP(self, data):
+        self.compose = "AT+QISEND=1,"
+        self.compose += str(len(data))
+        self.sendATComm(self.compose, ">")
+        self.sendATComm(data, "SEND OK")
+        self.clear_compose()
+
+    # Function for sending data to IFTTT
+    def sendDataIFTTT(self, eventName, key, data):
+        self.compose = 'AT+QHTTPCFG="contextid",1'
+        self.sendATComm(self.compose, "OK")
+        self.clear_compose()
+        self.compose = 'AT+QHTTPCFG="requestheader",1'
+        self.sendATComm(self.compose, "OK")
+        self.clear_compose()
+        self.compose = 'AT+QHTTPCFG="self.responseheader",1'
+        self.sendATComm(self.compose, "OK")
+        self.clear_compose()
+        url = str("https://maker.ifttt.com/trigger/" + eventName + "/with/key/" + key)
+        self.compose = "AT+QHTTPURL="
+        self.compose += str(len(url))
+        self.compose += ",80"
+        self.setTimeout(20)
+        self.sendATComm(self.compose, "CONNECT")
+        self.clear_compose()
+        self.sendDataComm(url, "OK")
+        payload = (
+            "POST /trigger/"
+            + eventName
+            + "/with/key/"
+            + key
+            + " HTTP/1.1\r\nHost: maker.ifttt.com\r\nContent-Type: application/json\r\nContent-Length: "
+            + str(len(data))
+            + "\r\n\r\n"
+        )
+        payload += data
+        self.compose = "AT+QHTTPPOST="
+        self.compose += str(len(payload))
+        self.compose += ",60,60"
+        self.sendATComm(self.compose, "CONNECT")
+        self.clear_compose()
+        self.sendDataComm(payload, "OK")
+        delay(5000)
+        self.sendATComm("AT+QHTTPREAD=80", "+QHTTPREAD: 0")
+
+    # Function for sending data to Thingspeak
+    def sendDataThingspeak(self, key, data):
+        self.compose = 'AT+QHTTPCFG="contextid",1'
+        self.sendATComm(self.compose, "OK")
+        self.clear_compose()
+        self.compose = 'AT+QHTTPCFG="requestheader",0'
+        self.sendATComm(self.compose, "OK")
+        self.clear_compose()
+        url = str("https://api.thingspeak.com/update?api_key=" + key + "&" + data)
+        self.compose = "AT+QHTTPURL="
+        self.compose += str(len(url))
+        self.compose += ",80"
+        self.setTimeout(20)
+        self.sendATComm(self.compose, "CONNECT")
+        self.clear_compose()
+        self.sendDataComm(url, "OK")
+        delay(3000)
+        self.sendATComm("AT+QHTTPGET=80", "+QHTTPGET")
+
+    # Function for connecting to server via UDP
+    def startUDPService(self):
+        port = "3005"
+        self.compose = 'AT+QIOPEN=1,1,"UDP SERVICE","'
+        self.compose += str(self.ip_address)
+        self.compose += '",0,'
+        self.compose += str(port)
+        self.compose += ",0"
+        self.sendATComm(self.compose, "OK\r\n")
+        self.clear_compose()
+        self.sendATComm("AT+QISTATE=0,1", "\r\n")
+
+    # Fuction for sending data via udp.
+    def sendDataUDP(self, data):
+        self.compose = "AT+QISEND=1,"
+        self.compose += str(len(data))
+        self.compose += ',"'
+        self.compose += str(self.ip_address)
+        self.compose += '",'
+        self.compose += str(self.port_number)
+        self.sendATComm(self.compose, ">")
+        self.clear_compose()
+        self.sendATComm(data, "SEND OK")
+
+    # Function for closing server connection
+    def closeConnection(self):
+        self.sendATComm("AT+QICLOSE=1", "\r\n")
+
 
 if __name__ == "__main__":
     sim = SIM2070()
