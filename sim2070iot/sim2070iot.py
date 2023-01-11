@@ -106,6 +106,16 @@ class SIM2070:
     def getIMEI(self):
         return self.sendATComm("AT+CGSN", "OK\r\n")  # Identical command: AT+GSN
 
+    # Function for configurating and activating TCP context
+    def activateContext(self):
+        self.sendATComm("AT+QICSGP=1", "OK\r\n")
+        delay(1000)
+        self.sendATComm("AT+QIACT=1", "\r\n")
+
+    # Function for deactivating TCP context
+    def deactivateContext(self):
+        self.sendATComm("AT+QIDEACT=1", "\r\n")
+
     def sendSMS(self, number, text):
         self.sendATComm("AT+CMGF=1", "OK\r\n")  # text mode
         delay(500)
@@ -114,7 +124,7 @@ class SIM2070:
         self.compose += str(number)
         self.compose += '"'
 
-        self.sendATComm(self.compose, ">")
+        self.sendATComm(self.compose, "\r\n")
         delay(1000)
         self.clear_compose()
         delay(1000)
